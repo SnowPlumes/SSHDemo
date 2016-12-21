@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- Action配置 -->
+	<bean id="loginAction" class="me.lv.market.action.LoginAction"
+		scope="prototype">
+		<property name="loginService" ref="loginService" />
+		<property name="customerService" ref="customerService" />
+	</bean>
+
+	<!-- Service配置 -->
+	<bean id="loginService" class="me.lv.market.service.impl.LoginServiceImpl" />
+
+	<bean id="customerService" class="me.lv.market.service.impl.CustomerServiceImpl">
+		<property name="customerDao" ref="customerDao" />
+	</bean>
+
+	<!-- Dao配置 -->
+	<bean id="customerDao" class="me.lv.market.dao.impl.CustomerDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url"
+			value="jdbc:mysql://localhost:3306/supermarket?useSSL=false" />
+		<property name="username" value="root" />
+		<property name="password" value="123456" />
+	</bean>
+
+	<!-- 配置sessionFactory -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">
+					org.hibernate.dialect.MySQLDialect
+				</prop>
+				<!-- hbm:映射 to DDL: create drop alter -->
+				<!-- <prop key="hibernate.hbm2ddl.auto">update</prop> -->
+				<!-- 事务，？？？ -->
+				<!-- <prop key="hibernate.connection.autocommit">true</prop> -->
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+			</props>
+		</property>
+		<property name="mappingResources">
+			<!-- 指定hibernate映射文件 -->
+			<list>
+				<value>me/lv/market/pojo/customer.hbm.xml</value>
+			</list>
+		</property>
+
+		<!-- <property name="mappingDirectoryLocations"> <list> <value>classpath:me/lv/market/pojo</value> 
+			</list> </property> -->
+	</bean>
+
+	<!-- 管理事务 -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<!-- 注解开启事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+</beans>  
